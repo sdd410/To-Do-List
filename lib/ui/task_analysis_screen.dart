@@ -53,7 +53,11 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Analysis & Insights")),
+      backgroundColor: Colors.pink[50],
+      appBar: AppBar(
+        title: const Text("Analysis & Insights"),
+        backgroundColor: Colors.pinkAccent,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -63,6 +67,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               hint: const Text("Select a Task"),
               value: selectedTask,
               isExpanded: true,
+              dropdownColor: Colors.pink[100],
               onChanged: (task) {
                 setState(() {
                   selectedTask = task;
@@ -73,7 +78,10 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                   tasks.map((task) {
                     return DropdownMenuItem(
                       value: task,
-                      child: Text(task.title),
+                      child: Text(
+                        task.title,
+                        style: const TextStyle(color: Colors.purpleAccent),
+                      ),
                     );
                   }).toList(),
             ),
@@ -81,13 +89,29 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
             Expanded(
               child:
                   timeSpentPerDay.isEmpty
-                      ? const Center(child: Text("No data available"))
+                      ? const Center(
+                        child: Text(
+                          "No data available",
+                          style: TextStyle(color: Colors.purple),
+                        ),
+                      )
                       : BarChart(
                         BarChartData(
                           alignment: BarChartAlignment.spaceAround,
+                          backgroundColor: Colors.white,
+                          borderData: FlBorderData(show: false),
+                          gridData: FlGridData(show: false),
                           titlesData: FlTitlesData(
                             leftTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: true),
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  return Text(
+                                    "${value.toInt()}h",
+                                    style: TextStyle(color: Colors.purple),
+                                  );
+                                },
+                              ),
                             ),
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
@@ -97,7 +121,12 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                                       DateTime.fromMillisecondsSinceEpoch(
                                         value.toInt(),
                                       );
-                                  return Text(DateFormat('MM/dd').format(date));
+                                  return Text(
+                                    DateFormat('MM/dd').format(date),
+                                    style: const TextStyle(
+                                      color: Colors.purpleAccent,
+                                    ),
+                                  );
                                 },
                                 reservedSize: 30,
                               ),
@@ -110,12 +139,32 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                                   barRods: [
                                     BarChartRodData(
                                       toY: entry.value,
-                                      color: Colors.blue,
+                                      color: Colors.pinkAccent,
                                       width: 16,
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                   ],
                                 );
                               }).toList(),
+                          barTouchData: BarTouchData(
+                            touchTooltipData: BarTouchTooltipData(
+                              tooltipBgColor: Colors.pink[200],
+                              getTooltipItem: (
+                                group,
+                                groupIndex,
+                                rod,
+                                rodIndex,
+                              ) {
+                                return BarTooltipItem(
+                                  "${rod.toY.toStringAsFixed(1)} hrs",
+                                  const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
             ),

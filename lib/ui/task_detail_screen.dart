@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -24,6 +26,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   DateTime? startTime;
   bool isEditing = false;
   List<TaskTimeLog> _timeLogs = [];
+  Timer? _timer;
+  Duration _elapsedTime = Duration.zero;
 
   @override
   void initState() {
@@ -58,28 +62,43 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     Navigator.pop(context, true);
   }
 
-  Future<void> _toggleTimer() async {
+  void _toggleTimer() {
     if (isRunning) {
-      await widget.database
-          .into(widget.database.taskTimeLogs)
-          .insert(
-            TaskTimeLogsCompanion(
-              taskId: Value(widget.task.id),
-              startTime: Value(startTime!),
-              endTime: Value(DateTime.now()),
-            ),
-          );
-      _loadTimeLogs();
-      setState(() {
-        isRunning = false;
-        startTime = null;
-      });
+      _stopTimer();
     } else {
-      setState(() {
-        isRunning = true;
-        startTime = DateTime.now();
-      });
+      _startTimer();
     }
+  }
+
+  void _startTimer() {
+    setState(() {
+      isRunning = true;
+      startTime = DateTime.now();
+      _elapsedTime = Duration.zero;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _elapsedTime = DateTime.now().difference(startTime!);
+      });
+    });
+  }
+
+  Future<void> _stopTimer() async {
+    _timer?.cancel();
+    await widget.database
+        .into(widget.database.taskTimeLogs)
+        .insert(
+          TaskTimeLogsCompanion(
+            taskId: Value(widget.task.id),
+            startTime: Value(startTime!),
+            endTime: Value(DateTime.now()),
+          ),
+        );
+    _loadTimeLogs();
+    setState(() {
+      isRunning = false;
+      startTime = null;
+    });
   }
 
   @override
@@ -138,6 +157,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               onPressed: _toggleTimer,
               child: Text(isRunning ? "Stop Timer" : "Start Timer"),
             ),
+            if (isRunning)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  "Elapsed Time: ${_elapsedTime.inHours}:${(_elapsedTime.inMinutes % 60).toString().padLeft(2, '0')}:${(_elapsedTime.inSeconds % 60).toString().padLeft(2, '0')}",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             const SizedBox(height: 20),
             const Text("Time Logs:"),
             Expanded(

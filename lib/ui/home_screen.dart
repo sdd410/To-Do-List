@@ -52,19 +52,19 @@ class _HomeScreenState extends State<HomeScreen>
     ];
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
         title: const Text("To-Do List"),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.pink.shade300,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: _screens[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.white,
+        backgroundColor: Colors.pink.shade300,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.pink.shade100,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.list), label: "Tasks"),
           BottomNavigationBarItem(
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen>
       floatingActionButton:
           _selectedIndex == 0
               ? FloatingActionButton(
-                backgroundColor: Colors.orange,
+                backgroundColor: Colors.pink.shade300,
                 onPressed: () async {
                   bool? added = await Navigator.push(
                     context,
@@ -92,13 +92,13 @@ class _HomeScreenState extends State<HomeScreen>
                         secondaryAnimation,
                         child,
                       ) {
-                        return FadeTransition(opacity: animation, child: child);
+                        return ScaleTransition(scale: animation, child: child);
                       },
                     ),
                   );
                   if (added == true) setState(() {});
                 },
-                child: const Icon(Icons.add, color: Colors.black),
+                child: const Icon(Icons.add, color: Colors.white),
               )
               : null,
     );
@@ -116,7 +116,7 @@ class TaskListScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.orange),
+            child: CircularProgressIndicator(color: Colors.pink),
           );
         }
         final tasks = snapshot.data!;
@@ -138,16 +138,20 @@ class TaskListScreen extends StatelessWidget {
                 await database.deleteTask(task.id);
               },
               child: ListTile(
+                tileColor: Colors.pink.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 title: Text(
                   task.title,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.black),
                 ),
                 subtitle: Text(
                   task.isCompleted ? "Completed" : "Pending",
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.pink.shade900),
                 ),
                 trailing: Checkbox(
-                  activeColor: Colors.orange,
+                  activeColor: Colors.pink.shade400,
                   value: task.isCompleted,
                   onChanged: (value) async {
                     await database.updateTask(
@@ -168,7 +172,13 @@ class TaskListScreen extends StatelessWidget {
                         secondaryAnimation,
                         child,
                       ) {
-                        return FadeTransition(opacity: animation, child: child);
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(1, 0),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        );
                       },
                     ),
                   );
