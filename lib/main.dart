@@ -15,22 +15,42 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "To-Do List",
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.pink[50],
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.pinkAccent,
           foregroundColor: Colors.white,
+          elevation: 5,
+          shadowColor: Colors.pink[200],
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(color: Colors.pink[900]),
+          bodyMedium: TextStyle(color: Colors.pink[700]),
+          titleLarge: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.pinkAccent,
+          ),
         ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.pinkAccent,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        buttonTheme: ButtonThemeData(
+          buttonColor: Colors.pinkAccent,
+          textTheme: ButtonTextTheme.primary,
         ),
       ),
-      home: HomeScreen(database: database),
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        child: HomeScreen(database: database),
+      ),
     );
   }
 }
