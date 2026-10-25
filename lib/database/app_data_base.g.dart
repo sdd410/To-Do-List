@@ -398,7 +398,7 @@ class $TaskTimeLogsTable extends TaskTimeLogs
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES tasks (id)',
+      'REFERENCES tasks (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _startTimeMeta = const VerificationMeta(
@@ -467,6 +467,10 @@ class $TaskTimeLogsTable extends TaskTimeLogs
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {taskId, startTime},
+  ];
   @override
   TaskTimeLog map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -687,6 +691,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [tasks, taskTimeLogs];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tasks',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('task_time_logs', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$TasksTableCreateCompanionBuilder =

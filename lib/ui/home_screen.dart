@@ -10,7 +10,7 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.database});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen>
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<Widget> screens = [
       TaskListScreen(database: widget.database),
       AnalysisScreen(database: widget.database),
     ];
@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: _screens[_selectedIndex],
+        child: screens[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.pink.shade300,
@@ -120,6 +120,14 @@ class TaskListScreen extends StatelessWidget {
           );
         }
         final tasks = snapshot.data!;
+        if (tasks.isEmpty) {
+          return const Center(
+            child: Text(
+              "No tasks yet! Tap + to create one.",
+              style: TextStyle(color: Colors.pink, fontSize: 16),
+            ),
+          );
+        }
         return ListView.builder(
           itemCount: tasks.length,
           itemBuilder: (context, index) {
@@ -137,53 +145,58 @@ class TaskListScreen extends StatelessWidget {
               onDismissed: (direction) async {
                 await database.deleteTask(task.id);
               },
-              child: ListTile(
-                tileColor: Colors.pink.shade100,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                title: Text(
-                  task.title,
-                  style: const TextStyle(color: Colors.black),
-                ),
-                subtitle: Text(
-                  task.isCompleted ? "Completed" : "Pending",
-                  style: TextStyle(color: Colors.pink.shade900),
-                ),
-                trailing: Checkbox(
-                  activeColor: Colors.pink.shade400,
-                  value: task.isCompleted,
-                  onChanged: (value) async {
-                    await database.updateTask(
-                      task.copyWith(isCompleted: value!),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: ListTile(
+                  tileColor: Colors.pink.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  title: Text(
+                    task.title,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  subtitle: Text(
+                    task.isCompleted ? "Completed" : "Pending",
+                    style: TextStyle(color: Colors.pink.shade900),
+                  ),
+                  trailing: Checkbox(
+                    activeColor: Colors.pink.shade400,
+                    value: task.isCompleted,
+                    onChanged: (value) async {
+                      if (value != null) {
+                        await database.updateTask(
+                          task.copyWith(isCompleted: value),
+                        );
+                      }
+                    },
+                  ),
+                  onTap: () async {
+                    bool? updated = await Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                                TaskDetailScreen(database: database, task: task),
+                        transitionsBuilder: (
+                          context,
+                          animation,
+                          secondaryAnimation,
+                          child,
+                        ) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1, 0),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
                     );
+                    if (updated == true) {}
                   },
                 ),
-                onTap: () async {
-                  bool? updated = await Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder:
-                          (context, animation, secondaryAnimation) =>
-                              TaskDetailScreen(database: database, task: task),
-                      transitionsBuilder: (
-                        context,
-                        animation,
-                        secondaryAnimation,
-                        child,
-                      ) {
-                        return SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(1, 0),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        );
-                      },
-                    ),
-                  );
-                  if (updated == true) {}
-                },
               ),
             );
           },

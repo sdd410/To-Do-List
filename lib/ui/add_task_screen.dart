@@ -7,7 +7,7 @@ class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key, required this.database});
 
   @override
-  _AddTaskScreenState createState() => _AddTaskScreenState();
+  State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen>
@@ -32,21 +32,29 @@ class _AddTaskScreenState extends State<AddTaskScreen>
   }
 
   void _saveTask() async {
-    if (_titleController.text.isEmpty) return;
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a task title')),
+      );
+      return;
+    }
 
     final newTask = TasksCompanion(
-      title: Value(_titleController.text),
-      description: Value(_descriptionController.text),
+      title: Value(_titleController.text.trim()),
+      description: Value(_descriptionController.text.trim()),
       isCompleted: const Value(false),
     );
 
     await widget.database.insertTask(newTask);
+    if (!mounted) return;
     Navigator.pop(context, true);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 

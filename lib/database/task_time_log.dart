@@ -1,12 +1,11 @@
 import 'package:drift/drift.dart';
+import 'task.dart';
 
 @DataClassName('TaskTimeLog')
 class TaskTimeLogs extends Table {
   IntColumn get id => integer().autoIncrement()(); // Log Entry ID
   IntColumn get taskId =>
-      integer().customConstraint(
-        'REFERENCES tasks(id) ON DELETE CASCADE',
-      )(); // Foreign Key to Tasks
+      integer().references(Tasks, #id, onDelete: KeyAction.cascade)(); // Foreign Key to Tasks
   DateTimeColumn get startTime => dateTime()(); // When user started the task
   DateTimeColumn get endTime =>
       dateTime().nullable()(); // When user stopped (nullable until stopped)
@@ -16,6 +15,6 @@ class TaskTimeLogs extends Table {
   ];
   @override
   List<String> get customConstraints => [
-    'CHECK (endTime IS NULL OR endTime > startTime)', // Ensuring endTime > startTime if not null
+    'CHECK (end_time IS NULL OR end_time >= start_time)', // Ensuring end_time >= start_time if not null
   ];
 }

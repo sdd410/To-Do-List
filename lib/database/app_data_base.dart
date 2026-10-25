@@ -13,10 +13,17 @@ part 'app_data_base.g.dart';
 
 @DriftDatabase(tables: [Tasks, TaskTimeLogs], daos: [TaskDao])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 
   // Insert a new task
   Future<int> insertTask(TasksCompanion task) async {
@@ -33,8 +40,9 @@ class AppDatabase extends _$AppDatabase {
     return update(tasks).replace(task);
   }
 
-  // Delete a task
+  // Delete a task and its time logs
   Future<int> deleteTask(int id) async {
+    await (delete(taskTimeLogs)..where((l) => l.taskId.equals(id))).go();
     return (delete(tasks)..where((t) => t.id.equals(id))).go();
   }
 
